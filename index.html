@@ -33,7 +33,7 @@
         /* CSS styles for the leaderboard */
         #leaderboard {
             margin-top: 20px;
-            font-family: Arial, sans-serif;
+            font-family: Arial, Arial;
             font-size: 18px;
             color: #333;
             list-style-type: none;
@@ -58,12 +58,29 @@
             background-color: #b87333;
             font-weight: bold;
         }
+
+        /* CSS styles for the message banner */
+        #message-banner {
+            background-color: #f44336;
+            color: #fff;
+            padding: 10px;
+            text-align: center;
+        }
+
+        #message-banner.error {
+            background-color: #f44336;
+        }
+
+        #message-banner.success {
+            background-color: #4caf50;
+        }
     </style>
 </head>
 <body>
-    <h1>Snake Game</h1>
+    <h1 style="font-family: 'Arial', sans-serif;">Snake Game</h1>
+    <div id="message-banner"></div>
     <div id="board"></div>
-    <h2>Leaderboard</h2>
+    <h2 style="font-family: 'Arial', sans-serif;">Leaderboard</h2>
     <ol id="leaderboard"></ol>
 
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
@@ -72,16 +89,14 @@
         (function() {
             // Initialize Firebase
             var config = {
-               apiKey: "AIzaSyDOC7dS0y-C7H9L88voC-RlUad9V5Wg4bU",
-
-  apiKey: "AIzaSyB1M9ls0nG53WkAPC0li6QJ4Q285eAgD2s",
+               apiKey: "AIzaSyB1M9ls0nG53WkAPC0li6QJ4Q285eAgD2s",
   authDomain: "snake-a33ae.firebaseapp.com",
+  databaseURL: "https://snake-a33ae-default-rtdb.firebaseio.com",
   projectId: "snake-a33ae",
   storageBucket: "snake-a33ae.appspot.com",
   messagingSenderId: "547410064030",
   appId: "1:547410064030:web:f09be13f5df5d02cdd418f",
   measurementId: "G-6YZFDS5HQ0"
-
             };
             firebase.initializeApp(config);
 
@@ -99,90 +114,115 @@
                     for (var x = 0; x < boardSize; x++) {
                         var cell = document.createElement("div");
                         cell.classList.add("cell");
+                        cell.id = "cell-" + x + "-" + y;
                         board.appendChild(cell);
                     }
                 }
             }
 
-            // Function to update the game state
-            function updateGame() {
-                var head = { x: snake[0].x + direction.x, y: snake[0].y + direction.y };
-
-                // Check if the snake hits the edge or its own tail
-                if (head.x < 0 || head.x >= boardSize || head.y < 0 || head.y >= boardSize || isSnakeAtPosition(head)) {
-                    gameOver();
-                    return;
-                }
-
-                // Snake didn't hit the edge or its tail, add the new head
-                snake.unshift(head);
-
-                if (head.x === food.x && head.y === food.y) {
-                    // Snake ate the food
-                    food.x = Math.floor(Math.random() * boardSize);
-                    food.y = Math.floor(Math.random() * boardSize);
-                } else {
-                    // Snake didn't eat the food
-                    snake.pop();
-                }
-
-                drawGame();
-            }
-
-            // Function to draw the game on the board
+            // Function to draw the game state
             function drawGame() {
-                var cells = document.getElementsByClassName("cell");
+                var board = document.getElementById("board");
+                var cells = board.getElementsByClassName("cell");
 
-                // Clear the board
+                // Clear previous game state
                 for (var i = 0; i < cells.length; i++) {
-                    cells[i].classList.remove("snake");
-                    cells[i].classList.remove("snake-head");
-                    cells[i].classList.remove("food");
+                    cells[i].classList.remove("snake", "snake-head", "food");
                 }
 
-                // Draw the snake
+                // Draw snake
                 for (var i = 0; i < snake.length; i++) {
-                    var cellIndex = snake[i].y * boardSize + snake[i].x;
-                    cells[cellIndex].classList.add("snake");
+                    var cell = document.getElementById("cell-" + snake[i].x + "-" + snake[i].y);
                     if (i === 0) {
-                        cells[cellIndex].classList.add("snake-head");
+                        cell.classList.add("snake-head");
+                    } else {
+                        cell.classList.add("snake");
                     }
                 }
 
-                // Draw the food as a circle
-                var foodIndex = food.y * boardSize + food.x;
-                cells[foodIndex].classList.add("food");
+                // Draw food
+                var foodCell = document.getElementById("cell-" + food.x + "-" + food.y);
+                foodCell.classList.add("food");
             }
+// Function to initialize the game
+function initGame() {
+    createBoard();
+    drawGame();
+
+    // Start game loop
+    setInterval(updateGame, moveInterval);
+
+    // Show message constantly
+    setInterval(function() {
+        showMessage("PLEASE DON'T CHEAT OR PUT BAD WORDS AS YOUR NAME", "success");
+    }, 3000); // Adjust the interval (in milliseconds) as needed
+}
+
+// Initialize the game
+initGame();
 
             // Function to handle keyboard input
-            function handleInput(event) {
-                if (gameOverFlag) {
-                    return; // Ignore input when game is over
-                }
-
+            function handleKeyPress(event) {
                 if (event.keyCode === 37 && direction.x !== 1) {
-                    // Left arrow key or 'A'
+                    // Left arrow key
                     direction = { x: -1, y: 0 };
                 } else if (event.keyCode === 38 && direction.y !== 1) {
-                    // Up arrow key or 'W'
+                    // Up arrow key
                     direction = { x: 0, y: -1 };
                 } else if (event.keyCode === 39 && direction.x !== -1) {
-                    // Right arrow key or 'D'
+                    // Right arrow key
                     direction = { x: 1, y: 0 };
                 } else if (event.keyCode === 40 && direction.y !== -1) {
-                    // Down arrow key or 'S'
+                    // Down arrow key
                     direction = { x: 0, y: 1 };
                 }
             }
 
-            // Function to check if the snake is at a given position
-            function isSnakeAtPosition(position) {
-                for (var i = 0; i < snake.length; i++) {
-                    if (snake[i].x === position.x && snake[i].y === position.y) {
-                        return true;
-                    }
+            // Function to update the game state
+            function updateGame() {
+                if (gameOverFlag) {
+                    return; // Game over
                 }
-                return false;
+
+                // Update snake position
+                var head = { x: snake[0].x + direction.x, y: snake[0].y + direction.y };
+                snake.unshift(head);
+
+                // Check for collision with walls or self
+                if (
+                    head.x < 0 ||
+                    head.y < 0 ||
+                    head.x >= boardSize ||
+                    head.y >= boardSize ||
+                    snake.slice(1).some(function(segment) {
+                        return segment.x === head.x && segment.y === head.y;
+                    })
+                ) {
+                    gameOver();
+                    return;
+                }
+
+                // Check for food
+                if (head.x === food.x && head.y === food.y) {
+                    // Generate new food position
+                    var occupiedCells = snake.concat([food]);
+                    var emptyCells = [];
+                    for (var x = 0; x < boardSize; x++) {
+                        for (var y = 0; y < boardSize; y++) {
+                            if (!occupiedCells.some(function(segment) {
+                                return segment.x === x && segment.y === y;
+                            })) {
+                                emptyCells.push({ x: x, y: y });
+                            }
+                        }
+                    }
+                    food = emptyCells[Math.floor(Math.random() * emptyCells.length)];
+                } else {
+                    // Remove tail segment
+                    snake.pop();
+                }
+
+                drawGame();
             }
 
             // Function to end the game
@@ -194,64 +234,63 @@
                 gameOverFlag = true;
 
                 var score = snake.length - 1;
-                var name = prompt("Game over! Enter your name to submit your score:");
-                if (name) {
-                    var database = firebase.database();
-                    var scoresRef = database.ref("scores");
-                    scoresRef.push({
-                        name: name,
-                        score: score
-                    });
+                var name = prompt("Game over! Your score: " + score + "\n\nEnter your name:");
+
+                if (name && name.trim().length > 0) {
+                    // Store score in leaderboard
+                    var leaderboardRef = firebase.database().ref("leaderboard");
+                    leaderboardRef.push({ name: name.trim(), score: score });
+
+                    // Display leaderboard
+                    displayLeaderboard();
                 }
-                resetGame();
+
+                // Show game over message
+                var messageBanner = document.getElementById("message-banner");
+                messageBanner.innerHTML = "Game over! Your score: " + score;
+                messageBanner.classList.add("error");
             }
 
-            // Function to reset the game
-            function resetGame() {
-                snake = [{ x: 20, y: 20 }];
-                direction = { x: 0, y: 0 };
-                food = { x: 25, y: 20 };
-                gameOverFlag = false;
-                drawGame();
-            }
-
-            // Function to initialize the game
-            function init() {
-                createBoard();
-                drawGame();
-                document.addEventListener("keydown", handleInput);
-                setInterval(updateGame, moveInterval);
-
-                // Retrieve scores from Firebase and update leaderboard
-                var database = firebase.database();
-                var scoresRef = database.ref("scores");
-                scoresRef.orderByChild("score").limitToLast(10).on("value", function(snapshot) {
+            // Function to display the leaderboard
+            function displayLeaderboard() {
+                var leaderboardRef = firebase.database().ref("leaderboard").orderByChild("score").limitToLast(10);
+                leaderboardRef.once("value", function(snapshot) {
                     var leaderboard = document.getElementById("leaderboard");
-                    leaderboard.innerHTML = ""; // Clear previous leaderboard
+                    leaderboard.innerHTML = "";
 
-                    var scores = [];
                     snapshot.forEach(function(childSnapshot) {
-                        scores.unshift(childSnapshot.val()); // Reverse the order
-                    });
+                        var childData = childSnapshot.val();
 
-                    for (var i = 0; i < scores.length; i++) {
-                        var score = scores[i];
-                        var li = document.createElement("li");
-                        li.textContent = (i + 1) + ". " + score.name + ": " + score.score;
-                        if (i === 0) {
-                            li.classList.add("gold");
-                        } else if (i === 1) {
-                            li.classList.add("silver");
-                        } else if (i === 2) {
-                            li.classList.add("copper");
+                        var listItem = document.createElement("li");
+                        listItem.textContent = childData.name + " - " + childData.score;
+
+                        if (childData.score >= 10) {
+                            listItem.classList.add("gold");
+                        } else if (childData.score >= 5) {
+                            listItem.classList.add("silver");
+                        } else {
+                            listItem.classList.add("copper");
                         }
-                        leaderboard.appendChild(li);
-                    }
+
+                        leaderboard.appendChild(listItem);
+                    });
                 });
             }
 
-            // Initialize the game
-            init();
+            // Function to start the game
+            function startGame() {
+                createBoard();
+                drawGame();
+
+                // Add event listener for keyboard input
+                document.addEventListener("keydown", handleKeyPress);
+
+                // Start game loop
+                setInterval(updateGame, moveInterval);
+            }
+
+            // Start the game
+            startGame();
         })();
     </script>
 </body>
