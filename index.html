@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Snake Game</title>
+    <style>
+        /* CSS styles for the game board and cells */
+        #board {
+            display: grid;
+            grid-template-columns: repeat(40, 20px);
+            grid-template-rows: repeat(40, 20px);
+            grid-gap: 1px;
+            background-color: #333;
+            padding: 10px;
+        }
+
+        .cell {
+            background-color: #555;
+        }
+
+        .snake {
+            background-color: #fff;
+        }
+
+        .snake-head {
+            background-color: #f00;
+        }
+
+        .food {
+            background-color: #0f0;
+            border-radius: 50%;
+        }
+
+        /* CSS styles for the leaderboard */
+        #leaderboard {
+            margin-top: 20px;
+            font-family: Arial, sans-serif;
+            font-size: 18px;
+            color: #333;
+            list-style-type: none;
+            padding-left: 0;
+        }
+
+        #leaderboard li {
+            padding: 5px;
+        }
+
+        #leaderboard li.gold {
+            background-color: gold;
+            font-weight: bold;
+        }
+
+        #leaderboard li.silver {
+            background-color: silver;
+            font-weight: bold;
+        }
+
+        #leaderboard li.copper {
+            background-color: #b87333;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1>Snake Game</h1>
+    <div id="board"></div>
+    <h2>Leaderboard</h2>
+    <ol id="leaderboard"></ol>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <script src="config.js"></script>
+    <script src="snake-game.js"></script>
+</body>
+</html>
