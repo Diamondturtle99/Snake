@@ -239,7 +239,7 @@
             // Button event listeners for game modes
             var easyButton = document.getElementById("easyMode");
             easyButton.addEventListener("click", function() {
-                moveInterval = 175;
+                moveInterval = 50;
                 foodPlacementThreshold = 0.6;
                 resetGame();
             });
@@ -253,7 +253,7 @@
 
             var hardButton = document.getElementById("hardMode");
             hardButton.addEventListener("click", function() {
-                moveInterval = 50;
+                moveInterval = 175;
                 foodPlacementThreshold = 0.2;
                 resetGame();
             });
